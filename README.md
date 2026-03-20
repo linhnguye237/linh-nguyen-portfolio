@@ -12,18 +12,18 @@ I’m passionate about turning data into actionable insights using SQL, Python, 
 ---
 
 ## Skills
-- SQL (CTEs, Joins, Window Functions)
-- Power BI (DAX, Dashboarding)
-- Python / R
-- Excel
-- Data Visualization
+- SQL (CTEs, Window Functions: LAG, DENSE_RANK, PIVOT/UNPIVOT)
+- Power BI (DAX: CALCULATE, PERCENTILE.EXC, SWITCH; Data Modeling)
+- R (dplyr, tidyr, K-means clustering)
+- Data Modeling (Star Schema)
+- Statistical Analysis & Feature Engineering
 
 ---
 
 ## Projects
 
 ### Christmas Sales Analysis (SQL)
-Analyzed sales performance across multiple Christmas seasons to identify revenue trends and business risks.
+Analyzed 41K+ retail transactions using SQL (CTEs, GROUP BY, CASE,...) to evaluate seasonal revenue trends and channel performance.
 
 [View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/sql-christmas-sales)
 
@@ -31,13 +31,15 @@ Analyzed sales performance across multiple Christmas seasons to identify revenue
 
 ### Power BI Projects
 
-#### Sales Dashboard  
-[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-sales-dashboard)  
-Analyzes sales performance, revenue trends, and profitability to identify key growth drivers and business risks.
+#### Sales Dashboard 
+Built an interactive dashboard in Power BI using DAX to analyze revenue, profit, and growth trends across time and product segments.
 
-#### Customer RFM Analysis Dashboard  
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-sales-dashboard)  
+
+#### Customer RFM Analysis Dashboard 
+Developed a 3-page Power BI dashboard using DAX-based RFM scoring to segment 18K+ customers and evaluate churn risk and promotional impact.
+
 [View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-customer-analysis)  
-Explores customer behavior and segmentation to uncover purchasing patterns and high-value customer groups.
 
 ---
 
@@ -54,5 +56,5 @@ Used Chi Test, Elbow Method and K-means clustering to segment commercial real es
 ---
 
 ## Contact
-- LinkedIn:
-- Email: (optional)
+- [LinkedIn](https://www.linkedin.com/in/linh-nguyen-99b43a330/)  
+- Email: nguye86l@mtholyoke.edu
