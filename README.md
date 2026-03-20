@@ -29,7 +29,7 @@ Analyzed sales performance across multiple Christmas seasons to identify revenue
 - Recovery was weak and mainly driven by volume
 - No strong growth drivers identified
 
-[*View Project*](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/2516b9c74313cc6568791b60bc8f166535aa2cbb/projects/sql-christmas-sales)
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/2516b9c74313cc6568791b60bc8f166535aa2cbb/projects/sql-christmas-sales)
 
 ---
 
