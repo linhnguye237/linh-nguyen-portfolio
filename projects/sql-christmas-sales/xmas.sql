@@ -8,7 +8,7 @@ GO
 
 /* -----------------------------------------------------------------------------------------------------------------
 Question 1: Retrieve sales information including revenue, quantity sold, cost, and profit for each Christmas season.
-- Exclude data from the 2017–2018 Christmas season because it does not have all 3 months
+- Exclude data from the 2017â€“2018 Christmas season because it does not have all 3 months
 - Round revenue, cost, and profit to millions of dollars (2 decimal places)
 - Round quantity to thousands (1 decimal place)
 */
