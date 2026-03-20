@@ -29,14 +29,19 @@ Analyzed sales performance across multiple Christmas seasons to identify revenue
 - Recovery was weak and mainly driven by volume
 - No strong growth drivers identified
 
-*Project coming soon*
+[*Christmas Sales Analysis*](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/2516b9c74313cc6568791b60bc8f166535aa2cbb/projects/sql-christmas-sales)
 
 ---
 
-### Sales Dashboard (Power BI)
-Built an interactive dashboard to analyze revenue, profit, and customer behavior.
+### Power BI Projects
 
-*Project coming soon*
+#### Sales Dashboard  
+[View Project](projects/powerbi-sales-dashboard)  
+Analyzes sales performance, revenue trends, and profitability to identify key growth drivers and business risks.
+
+#### Customer Analysis Dashboard  
+[View Project](projects/powerbi-customer-analysis)  
+Explores customer behavior and segmentation to uncover purchasing patterns and high-value customer groups.
 
 ---
 
