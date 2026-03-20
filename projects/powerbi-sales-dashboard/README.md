@@ -24,7 +24,7 @@ This project presents an interactive Power BI dashboard analyzing sales performa
 - Drill-down capability for deeper analysis
 
 ## Files
-- sales_dashboard.pbix
+- [Download DashBoard (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/077d087f95c5fef4dd7efd68645168aa6aaa17ae/projects/sql-christmas-sales/SQL%20Project%20Updated.sql)
 
 ## Dashboard Preview
 ![Overview](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/2e6345c788bef3d087848aa8d635f4d3c7e88a54/projects/powerbi-sales-dashboard/Preview.png)
