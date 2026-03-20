@@ -5,7 +5,7 @@ Data Analytics Portfolio | SQL, Power BI, R Studio | Real-world projects in sale
 ---
 
 ## About Me
-Hi! I'm Linh, a sophomore double majoring in Data Science and Economics at Mount Holyoke College.
+Hi! I'm Linh Nguyen, a sophomore double majoring in Data Science and Economics at Mount Holyoke College.
 
 I’m passionate about turning data into actionable insights using SQL, Python, and Power BI. I enjoy working with real-world datasets to uncover trends, optimize decisions, and tell meaningful stories with data.
 
