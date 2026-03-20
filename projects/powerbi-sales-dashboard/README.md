@@ -27,7 +27,7 @@ This project presents an interactive Power BI dashboard analyzing sales performa
 - sales_dashboard.pbix
 
 ## Dashboard Preview
-(Add screenshots here)
+- ![Overview]()
 
 ## Status
 Completed
