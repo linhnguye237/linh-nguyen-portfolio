@@ -25,38 +25,34 @@ I’m passionate about turning data into actionable insights using SQL, Python, 
 ### Christmas Sales Analysis (SQL)
 Analyzed sales performance across multiple Christmas seasons to identify revenue trends and business risks.
 
-- Revenue declined significantly in 2020–2021 (-3.2%)
-- Recovery was weak and mainly driven by volume
-- No strong growth drivers identified
-
-[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/2516b9c74313cc6568791b60bc8f166535aa2cbb/projects/sql-christmas-sales)
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/sql-christmas-sales)
 
 ---
 
 ### Power BI Projects
 
 #### Sales Dashboard  
-[View Project](projects/powerbi-sales-dashboard)  
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-sales-dashboard)  
 Analyzes sales performance, revenue trends, and profitability to identify key growth drivers and business risks.
 
-#### Customer Analysis Dashboard  
-[View Project](projects/powerbi-customer-analysis)  
+#### Customer RFM Analysis Dashboard  
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-customer-analysis)  
 Explores customer behavior and segmentation to uncover purchasing patterns and high-value customer groups.
 
 ---
 
 ### DataFest Clustering Analysis
-Used K-means clustering to segment commercial real estate markets and identify economic patterns.
+Used Chi Test, Elbow Method and K-means clustering to segment commercial real estate markets and identify economic patterns.
 
-*Project coming soon*
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/datafest-real-estate)  
 
 ---
 
 ## Resume
-Coming soon
+
 
 ---
 
 ## Contact
-- LinkedIn: (add later)
+- LinkedIn:
 - Email: (optional)
