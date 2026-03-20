@@ -56,5 +56,5 @@ Used Chi Test, Elbow Method and K-means clustering to segment commercial real es
 ---
 
 ## Contact
-- [LinkedIn](https://www.linkedin.com/in/linh-nguyen-99b43a330/)  
+- Linked In: [Linh Nguyen](https://www.linkedin.com/in/linh-nguyen-99b43a330/)  
 - Email: nguye86l@mtholyoke.edu
