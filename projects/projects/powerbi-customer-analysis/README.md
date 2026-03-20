@@ -98,4 +98,4 @@ This project presents a 3-page Power BI dashboard that analyzes customer behavio
 ---
 
 ## Status
-Completed - In progress of improving
+Completed 
