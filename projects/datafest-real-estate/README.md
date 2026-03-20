@@ -63,7 +63,7 @@ This project was developed during ASA DataFest 2025, a national data analysis co
 
 
 ## File
-Completed
+[Download Presentation](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/dd3672457b80b84fa5a41a7ce0fcef60abc5c6b2/projects/datafest-real-estate/Yokies%20DataFest%20Presentation.pptx)
 
 ---
 
