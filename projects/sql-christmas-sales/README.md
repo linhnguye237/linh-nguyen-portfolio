@@ -34,7 +34,7 @@ This project analyzes sales performance across multiple Christmas seasons to ide
 - Strengthen demand through targeted campaigns
 
 ## Files
-- [View SQL Code (GitHub)](link-to-your-sql-file)
+- [View SQL Code (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/077d087f95c5fef4dd7efd68645168aa6aaa17ae/projects/sql-christmas-sales/SQL%20Project%20Updated.sql)
 - [View Full Project Files (Google Drive)](https://drive.google.com/drive/folders/1bZH80KmytQOLrjyaxHRqpO0gJxp-ibDI)
 
 ## Status
