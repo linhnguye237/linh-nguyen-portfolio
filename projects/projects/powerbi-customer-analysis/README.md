@@ -90,7 +90,7 @@ This project presents a 3-page Power BI dashboard that analyzes customer behavio
 - [Download DashBoard (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/5f85f8f436c072f3f6cdb20bdc54ad9ddca0cea8/projects/projects/powerbi-customer-analysis/RFM_Updated_2.pbix)
 
 ## Dashboard Preview
-![Introduction]([images/overview.png](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/5f85f8f436c072f3f6cdb20bdc54ad9ddca0cea8/projects/projects/powerbi-customer-analysis/Introduction.png))
+![Introduction](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/5f85f8f436c072f3f6cdb20bdc54ad9ddca0cea8/projects/projects/powerbi-customer-analysis/Introduction.png)
 ![Overview](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/5f85f8f436c072f3f6cdb20bdc54ad9ddca0cea8/projects/projects/powerbi-customer-analysis/Overview.png)
 ![Customer Profile](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/5f85f8f436c072f3f6cdb20bdc54ad9ddca0cea8/projects/projects/powerbi-customer-analysis/Customer%20Profile.png)
 ![Behavior Analysis](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/5f85f8f436c072f3f6cdb20bdc54ad9ddca0cea8/projects/projects/powerbi-customer-analysis/Diagnostics.png)
