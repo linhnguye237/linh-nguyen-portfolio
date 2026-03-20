@@ -1,7 +1,7 @@
 # Christmas Sales Analysis (SQL)
 
 ## Overview
-This project analyzes sales performance across multiple Christmas seasons to identify revenue trends, business risks, and growth patterns.
+This project reports sales performance across multiple Christmas seasons to identify revenue trends, business risks, and growth patterns.
 
 ## Dataset
 - Multi-year retail sales data
