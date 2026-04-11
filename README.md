@@ -1,4 +1,4 @@
-# Linh Nguyen – Data Analytics Portfolio
+# Linh Nguyen - Data Analytics Portfolio
 
 Data Analytics Portfolio | SQL, Power BI, R Studio | Real-world projects in sales analysis, dashboards, and business insights
 
