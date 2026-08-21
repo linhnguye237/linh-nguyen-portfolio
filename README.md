@@ -34,7 +34,7 @@ Built a Python pipeline that rebuilds an investment-banking comparable-company v
 ### Christmas Sales Analysis (SQL)
 Analyzed 41K+ retail transactions using SQL (CTEs, GROUP BY, CASE,...) to evaluate seasonal revenue trends and channel performance.
 
-[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/sql-christmas-sales)
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/sql-christmas-sales)
 
 ---
 
@@ -43,19 +43,19 @@ Analyzed 41K+ retail transactions using SQL (CTEs, GROUP BY, CASE,...) to evalua
 #### Sales Dashboard 
 Built an interactive dashboard in Power BI using DAX to analyze revenue, profit, and growth trends across time and product segments.
 
-[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-sales-dashboard)  
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/powerbi-sales-dashboard)  
 
 #### Customer RFM Analysis Dashboard 
 Developed a 3-page Power BI dashboard using DAX-based RFM scoring to segment 18K+ customers and evaluate churn risk and promotional impact.
 
-[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/powerbi-customer-analysis)  
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/powerbi-customer-analysis)  
 
 ---
 
 ### DataFest Clustering Analysis
 Used Chi Test, Elbow Method and K-means clustering to segment commercial real estate markets and identify economic patterns.
 
-[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/13737c58f0836d745c36e2fa4d32b3afb8f993f3/projects/datafest-real-estate)  
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/datafest-real-estate)  
 
 ---
 
