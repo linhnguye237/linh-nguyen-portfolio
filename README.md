@@ -17,10 +17,19 @@ I’m passionate about turning data into actionable insights using SQL, Python, 
 - R (dplyr, tidyr, K-means clustering)
 - Data Modeling (Star Schema)
 - Statistical Analysis & Feature Engineering
+- Python (pandas, requests, openpyxl; REST/SPARQL APIs, XBRL parsing, Excel automation)
+- Financial Analysis (enterprise value, EV/EBITDA, EV/Sales, P/E, margins, CAGR)
 
 ---
 
 ## Projects
+
+### Listed Comparables Automation (Python)
+Built a Python pipeline that rebuilds an investment-banking comparable-company valuation workbook from free public data only (SEC EDGAR XBRL, Wikidata, Yahoo Finance) — worldwide company screening, ~39 metrics per company, 131 months of point-in-time valuation history, and a generated 8-tab Excel deliverable. Run end to end for 4 companies across 3 industries, including a German company with no SEC filings.
+
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/python-comps-automation)
+
+---
 
 ### Christmas Sales Analysis (SQL)
 Analyzed 41K+ retail transactions using SQL (CTEs, GROUP BY, CASE,...) to evaluate seasonal revenue trends and channel performance.
