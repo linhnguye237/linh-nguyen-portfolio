@@ -25,7 +25,7 @@ I’m passionate about turning data into actionable insights using SQL, Python, 
 ## Projects
 
 ### Listed Comparables Automation (Python)
-Built a Python pipeline that rebuilds an investment-banking comparable-company valuation workbook from free public data only (SEC EDGAR XBRL, Wikidata, Yahoo Finance) — worldwide company screening, ~39 metrics per company, 131 months of point-in-time valuation history, and a generated 8-tab Excel deliverable. Run end to end for 4 companies across 3 industries, including a German company with no SEC filings.
+Built a Python pipeline that rebuilds a comparable company valuation workbook from free public data only (SEC EDGAR, Wikidata, Yahoo Finance), covering worldwide company screening, 39 metrics per company, 131 months of point-in-time valuation history, and a generated 8-tab Excel deliverable. Run end to end for 4 companies across 3 industries.
 
 [View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/python-comps-automation)
 

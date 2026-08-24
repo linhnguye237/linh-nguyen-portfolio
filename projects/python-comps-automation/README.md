@@ -1,199 +1,173 @@
-# Listed Comparables Automation (Python + Excel)
+# Listed Comparables Automation (Python)
 
 ## Overview
-Investment analysts build a "listed comparables" workbook to value a company against its publicly
-traded peers. Done by hand it takes days per company and normally depends on a paid market-data
-terminal.
+This project rebuilds a comparable company valuation workbook, the deliverable analysts use to value a
+company against its publicly traded peers, using only free public data. The process is normally manual
+and depends on a paid market data terminal. Here it runs as one Python command that takes a stock
+ticker and produces a formatted 8-tab Excel workbook.
 
-This project rebuilds that whole deliverable in Python using **only free public data**, and turns it
-into one repeatable command. You give it a stock ticker; it identifies the company, builds a worldwide
-candidate list, judges every candidate against the screening rules, ranks the peers, pulls about forty
-financial metrics for each, and fills a formatted 8-tab Excel workbook with charts.
-
-Four real companies have been run through it end to end, including a German company with no US filings
-at all.
+Four companies have been run through the pipeline end to end, across three industries and two
+continents.
 
 ---
 
 ## Objective
-- Reproduce a paid-terminal deliverable from free public sources
-- Replace a manual, days-long process with one resumable command
-- Keep an analyst in control of the two judgement calls that genuinely need a human
-- Never fabricate a number: where free data cannot cover something, say so in the output
+- Reproduce a paid terminal deliverable using only free public sources
+- Replace a manual, multi-day process with one repeatable command
+- Keep an analyst in control of the two steps that require judgement
+- Report gaps in the data instead of filling them in
 
 ---
 
-## Data Sources
-All free and public. No paid market-data subscription anywhere in the pipeline.
-
-| Source | Used for |
-|---|---|
-| SEC EDGAR (`companyfacts` XBRL) | Historical financials for US filers, point-in-time |
-| SEC EDGAR filing text | The business-description section of annual reports |
-| Wikidata (CC0, SPARQL) | Worldwide company enumeration — companies with no SEC presence |
-| Yahoo Finance (`yfinance`) | Prices, market cap, enterprise value, fiscal-year history, FX |
-| Gemini API (free tier) | Reading business descriptions into structured characteristics |
-
-Scale: an index of **8,004 US filers**, plus a worldwide layer (181 road-transport companies for a
-trucking case, 236 for a logistics case).
+## Dataset
+- Source: SEC EDGAR (XBRL company facts and annual report text), Wikidata, Yahoo Finance
+- An index of 8,004 US filers, plus a worldwide company layer built from Wikidata
+- About 39 financial metrics per company
+- 131 month-ends of valuation history per company
+- All sources are free and public. No paid market data subscription is used anywhere in the pipeline.
 
 ---
 
 ## Tools & Techniques
-- **Python** — 179 modules, ~37K lines (pandas, requests, openpyxl, Excel COM)
-- **Financial analysis** — enterprise value, EV/EBITDA, EV/Sales, P/E, EBITDA margin, gross margin,
-  revenue CAGR, operating and free cash flow — all recomputed from raw filings rather than taken from
-  a vendor
-- **XBRL parsing** — de-duplicating restated filings, exact-tag concept selection, a per-company
-  EBITDA route chosen by rule
-- **Data modelling** — a layered cache (per-case reading through to a shared frozen snapshot), an
-  append-only judgement store with full provenance, entity-identity resolution across ID schemes
-- **LLM-assisted classification** — 25 business characteristics per company, with a verbatim-quote
-  evidence rule and a pinned model + prompt version
-- **Excel automation** — writing into a live template without destroying its formulas, charts or styles
-- **Testing** — 31 acceptance checks behind a single command, several of them mutation-proven
+- Python (pandas, requests, openpyxl, Excel COM): 179 modules, about 37,000 lines
+- Financial analysis (enterprise value, EV/EBITDA, EV/Sales, P/E, EBITDA margin, gross margin, revenue
+  CAGR, operating and free cash flow)
+- XBRL parsing (restatement handling, exact tag selection, per-company EBITDA routing)
+- API integration (REST and SPARQL)
+- Data modeling (layered caching, append-only record store, entity identity resolution)
+- LLM-assisted classification (25 business characteristics per company, supporting quote required)
+- Excel automation (writing into a live template without breaking its formulas, charts or styles)
+- Automated testing (31 acceptance checks behind one command)
 
 ---
 
-## Methodology — the 14-stage pipeline
+## Methodology
 
-```
-python -m pipeline run --ticker XYZ
-```
+1. Identify the Company
+- Resolve the ticker to a single company worldwide and select its primary listing
+- Build a profile: industry, geography, business segments and business description
 
-**12 stages automatic, 2 analyst checkpoints.** It stops at the first thing it needs and prints exactly
-what to produce. Re-running resumes, because a stage counts as done when its output exists on disk —
-there is no state file to go stale.
+2. Define the Screening Criteria (analyst step)
+- An analyst writes the rules that define a comparable peer for this company
+- A strict linter confirms every rule is valid before anything runs
 
-| | Stage | Who |
-|---|---|---|
-| 1 | Create the case | auto |
-| 2 | Build the company profile (industry, geography, segments, business text) | auto |
-| 3 | **Write the screening criteria** | **analyst** |
-| 4 | Check the criteria are valid (strict linter) | auto |
-| 5 | Put the criteria into the workbook | auto |
-| 6 | Screen the universe (US filers + worldwide stream) | auto |
-| 7 | Work out the numbers (~39 metrics per company) | auto |
-| 8 | Put the numbers in the workbook | auto |
-| 9 | Judge every company against every criterion | auto |
-| 10 | Rank the candidates | auto |
-| 11 | **Approve the peer set** | **analyst** |
-| 12 | Build the monthly valuation history | auto |
-| 13 | Put the history in the workbook | auto |
-| 14 | Check the result | auto |
+3. Build and Screen the Candidate Universe
+- Screen US filers and a worldwide stream from Wikidata against those criteria
+- Judge every candidate against every criterion and record the result
+- Rank the companies that survive
 
----
+4. Approve the Peer Set (analyst step)
+- The analyst approves the final peer list and may override the ranking
+- Every override is recorded with a written reason, the author and the date
 
-## The Deliverable
+5. Populate the Workbook
+- Pull about 39 metrics for each company and write them into the workbook
+- Build 131 months of point-in-time valuation history
+- Run 31 automated checks on the result
 
-An 8-tab Excel workbook, generated for any ticker, keeping the template's 20,092 formulas, both
-charts, the filter spill, every style and both named ranges:
-
-**Summary** (filterable peer table) · **Football Field** (valuation-range chart) · **Comps** (the peer
-grid) · **Comps His** (131 month-ends of EV/EBITDA, EV/Sales and P/E) · **Screen Criteria** ·
-**Screening** (the funnel) · **Criteria Matrix** (every company against every criterion) · **Mapping**
-
-The monthly history is **point-in-time**: every figure for a given month uses only what had actually
-been filed by that month-end, so a 2018 multiple is never computed from a 2022 restatement.
-
-There is also a web view — four screens (criteria, comparables, football field, trading history)
-reading the same numbers as the spreadsheet, served as a static page with Firebase Auth — which makes
-Excel an export rather than the system.
+The pipeline has 14 stages: 12 automatic and 2 analyst checkpoints. It stops at the first thing it
+needs and prints exactly what to produce. Re-running resumes where it stopped.
 
 ---
 
-## Key Results
+## Workbook Structure
+Eight tabs, generated for any ticker, keeping the template's 20,092 formulas, both charts and all
+formatting:
 
-| Case | What it proved |
-|---|---|
-| **AbbVie** (US pharma) | The reference build. The funnel reproduces exactly: 8,004 filers → 804 in scope → 765 screened. The finished workbook is provably **regenerable from an empty skeleton plus its own 109,778 values** — so the workbook is a render of the data, not an irreplaceable file |
-| **Old Dominion** (US trucking) | The screen generalises to another industry with no code changes: 62 US motor-freight companies, from its own criteria |
-| **Deutsche Post / DHL** (Germany) | **No CIK, no SEC filings, no US listing.** Ticker → 369-candidate worldwide screen → 62 judged → analyst-approved roster of 18 → populated grid + 131 months of history. 38+ countries represented, and **22 wrong-company ticker matches refused** |
-| **Nestlé** (Switzerland) | Screening criteria assembled **automatically** from machine-read evidence for the first time (6 criteria), then a roster-blind ranking of 17 candidates |
+1. Summary: filterable peer table with statistics (max, min, average, median, percentiles)
+2. Football Field: implied equity value by peer category
+3. Comps: the peer grid with every metric
+4. Comps His: 131 month-ends of EV/EBITDA, EV/Sales and P/E
+5. Screen Criteria: the rules used to define a peer
+6. Screening: the funnel from full universe down to the final peer set
+7. Criteria Matrix: every candidate scored against every criterion
+8. Mapping: field and label definitions
 
-**One command runs every check:** `python -m run_checks` → 31 checks, currently all green.
-
----
-
-## What I Learned (the hard parts)
-
-These are the problems that actually cost time, and they are more interesting than the plumbing.
-
-- **A lookup that returns something is not a lookup that returned the right thing.** A ticker is only
-  unique within an exchange. Matching on ticker alone bound a German meal-kit company to `MMM` and
-  credited it with **3M's $25bn of revenue**. A match now requires a US listing *and* name agreement.
-  The two failure modes are not symmetric: a missed match is two records to merge later, while a wrong
-  match is unrecoverable once a permanent judgement is keyed to it.
-- **A US classification code can never describe a foreign company.** An industry rule gated on SIC code
-  alone dropped 158 of 240 candidates for having no SIC code at all. Naming both schemes
-  (`sic_code OR wikidata_industry`) took the same 240 in and dropped **zero**, with 38 non-US countries
-  surviving.
-- **EDGAR repeats every annual figure in every restating filing.** Summing rows multiplies a number by
-  how many times it was filed. Key by `(period start, period end)` first.
-- **A gap in one metric alongside a zero in a sibling that shares its inputs is an extraction bug, not
-  missing data.** Following that closed an EV/EBITDA history gap from 30% coverage to 70%.
-- **Never predict what you can measure.** A "20 requests per day" API cap was read from a header and
-  planned around; a later window served 22. Repeat timeouts on the same nine companies looked like a
-  data problem and were actually a 60-second client timeout sitting inside a 23–60 second latency range.
-- **"Exit 0 and nothing happened" is its own failure class.** A hardcoded version pin in a scheduled
-  wrapper made a daily job report success while doing no work at all.
-- **A quote that appears is not a quote that supports.** Checking that evidence is verbatim cannot catch
-  a real sentence that backs nothing. Measuring that gap — 34.7% of rejections had a passing quote
-  elsewhere in the same text — is what justified rewriting the extraction prompt rather than guessing at
-  it.
+The valuation history is point-in-time. Every figure for a given month uses only what had been filed by
+that month-end, so a 2018 multiple is never calculated from a 2022 restatement.
 
 ---
 
-## Design Rules
-
-- **No company name is ever typed into code or a formula.** Peers are the output of rules, never a list
-  of names. An analyst may override, recorded with a written reason, the author, the date and the rank
-  the company held at the time, so override rot stays visible later.
-- **A missing number never silently rejects a company.** It goes to review.
-- **Judgements are permanent and append-only**, keyed to the model and prompt version that produced
-  them, so answers from two prompt generations can never be averaged into one statistic.
-- **Deterministic by default.** Every stage reads frozen snapshots; live network access is an explicit
-  opt-in flag, so a re-run is a pure function of its inputs.
-- **A failed API call must create no record**, or the junk record owns that slot forever and blocks the
-  retry.
+## Results by Company
+- AbbVie (US pharmaceuticals): the reference build. Screening funnel of 8,004 filers, to 804 in scope,
+  to 765 screened. The finished workbook regenerates from an empty template plus its own 109,778 values.
+- Old Dominion (US trucking): screened to 62 US motor freight companies from its own criteria, with no
+  code changes
+- Deutsche Post DHL (Germany): no SEC filings and no US listing. Produced 369 candidates, 62 judged, a
+  final peer set of 18, and 131 months of history. 22 incorrect ticker matches were caught and refused.
+- Nestlé (Switzerland): screening criteria assembled automatically for the first time, followed by a
+  ranking of 17 candidates
 
 ---
 
-## Known Limits (disclosed, never filled in)
+## Key Insights
 
-- **Forward estimates are absent from free data** and stay permanently blank. A paid terminal carries
-  analyst consensus; nothing free does.
-- **Monthly history is EDGAR-only**, so a non-US peer set has real gaps — 6 of DHL's 18 roster members
-  have none. That is a data-source problem, not a code one.
-- **Coverage beats cleverness.** Measured across 990 companies: revenue 482, five-year growth 194,
-  EBITDA growth 1, revenue mix 0. No ranking formula overcomes a missing input.
-- **Two stages need a human** by decision, not by accident: writing the screening criteria and approving
-  the final peer set. Roughly a couple of hours of analyst time per company.
+- The full deliverable can be produced from free public data, with two gaps that are disclosed rather
+  than estimated
+- Screening worldwide rather than US-only roughly quadruples the candidate pool. DHL produced 369
+  candidates across 38 countries.
+- Data coverage matters more than ranking method. Across 990 companies, revenue is available for 482,
+  five-year growth for 194, EBITDA growth for 1, and revenue mix for none. No formula improves on a
+  missing input.
+- Company identity is the highest-risk step, not the financial calculations. Matching on ticker alone
+  attributed 3M's $25bn of revenue to a German meal-kit company, because a ticker is only unique within
+  one exchange.
+- A US industry code cannot classify a foreign company. Screening on SIC code alone dropped 158 of 240
+  candidates for having no SIC code at all. Naming a second classification scheme dropped none.
+- Results generalize across industries and countries. Pharmaceuticals, trucking and logistics all
+  screened correctly with no code changes.
 
 ---
 
-## Output Preview
+## Business Impact
 
-**Football Field** — implied equity value by peer category (curated peers, sector context bands, the
-subject's own 24-month trading range) against the subject's current equity value. Title, categories and
-axis scale all follow the subject, so the chart is not shaped for any one industry.
+- Removes a paid market data subscription from the comparables workflow
+- Reduces the work per company from several days to roughly two hours of analyst time
+- Makes the peer list defensible. Peers come from written rules, never from a typed list of names, and
+  every analyst override carries a recorded reason and date.
+- Makes the deliverable reproducible. The workbook regenerates from its underlying data, so any figure
+  can be traced back to the filing it came from.
 
-![Football Field](FootballField.png)
+---
 
-**Monthly valuation history** — 131 month-ends of EV/EBITDA, point-in-time. Note the title: it states
-that 10 of 12 peers are drawn and names the two that have no history, rather than drawing a smooth line
-through data that does not exist.
+## Features
+- One command per company, resumable if it is interrupted
+- Worldwide company screening, not limited to US filers
+- Interactive filters in the workbook (region, type, growth type) with statistics that recalculate
+- Point-in-time valuation history across 131 month-ends
+- Two analyst checkpoints, with overrides recorded
+- Deterministic runs. Every stage reads frozen data and live access is opt-in, so a re-run gives the
+  same answer.
+- 31 automated checks behind a single command
 
-![Trading History](TradingHistory.png)
+---
+
+## Limitations
+- Forward-looking estimates are not available in free data and stay blank
+- Monthly history is drawn from SEC filings, so non-US peers have gaps. 6 of DHL's 18 peers have none.
+- Writing the screening criteria and approving the final peer set still need an analyst
 
 ---
 
 ## Files
-The pipeline runs against a private repository (it contains a firm's workbook template and cached
-filings). Code walkthrough available on request.
+The pipeline runs in a private repository, as it holds a workbook template and cached filings. A code
+walkthrough is available on request.
+
+---
+
+## Dashboard Preview
+
+![Football Field](FootballField.png)
+
+Implied equity value by peer category, compared against the company's current equity value. The title,
+categories and axis scale all follow the subject company, so the chart is not fixed to one industry.
+
+![Trading History](TradingHistory.png)
+
+Monthly EV/EBITDA across 131 month-ends. The title states that 10 of the 12 peers are drawn and names
+the two with no history, rather than drawing a line through data that does not exist.
 
 ---
 
 ## Status
-Working — 4 companies run end to end, 31 automated checks green. Automatic criteria writing and
-automatic peer selection are the stages currently being generalised.
+Working, 4 companies run end to end. In progress of automating the two analyst steps.
