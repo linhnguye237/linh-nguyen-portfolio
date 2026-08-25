@@ -18,6 +18,7 @@ I’m passionate about turning data into actionable insights using SQL, Python, 
 - Data Modeling (Star Schema)
 - Statistical Analysis & Feature Engineering
 - Python (pandas, requests, openpyxl; REST/SPARQL APIs, XBRL parsing, Excel automation)
+- Web Scraping & Data Pipelines (RSS/sitemap collection, SQLite, deduplication, scheduled runs, automated testing)
 - Financial Analysis (enterprise value, EV/EBITDA, EV/Sales, P/E, margins, CAGR)
 
 ---
@@ -28,6 +29,13 @@ I’m passionate about turning data into actionable insights using SQL, Python, 
 Built a Python pipeline that rebuilds a comparable company valuation workbook from free public data only (SEC EDGAR, Wikidata, Yahoo Finance), covering worldwide company screening, 39 metrics per company, 131 months of point-in-time valuation history, and a generated 8-tab Excel deliverable. Run end to end for 4 companies across 3 industries.
 
 [View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/python-comps-automation)
+
+---
+
+### Vietnam News Monitoring Pipeline (Python)
+Built a config-driven Python pipeline that replaces a paid weekly scraping workflow behind an institutional research note, sweeping 10 Vietnamese and English news sources every morning into an Excel workbook and a private dashboard. Criteria derived from 597 articles across 90 past issues; 1,564 articles collected across 58 unattended runs, with 798 automated checks.
+
+[View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/python-news-monitoring)
 
 ---
 
