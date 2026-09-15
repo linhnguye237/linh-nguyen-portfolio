@@ -86,8 +86,16 @@ This project presents a 3-page Power BI dashboard that analyzes customer behavio
 
 ---
 
+## Promotional Playbook
+A 13-slide follow-up deck that turns the dashboard's segments into a spend plan: which of the 8 RFM segments to grow with perks, which to win back and in what order, and four fixes to how promotions are planned and measured. It also documents a confirmed bug in the dashboard's own churn-risk filter (a segment name mismatch that undercounts at-risk customers by 1,171, 4,818/4.05bn actual vs. 3.65K/2.69bn shown) along with three other measurement gaps to fix before trusting the KPI cards above.
+
+- [Download Promotional Playbook (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/powerbi-customer-analysis/RFM_Promotional_Playbook.pptx)
+
+---
+
 ## Files
 - [Download DashBoard (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/powerbi-customer-analysis/RFM_Updated_2.pbix)
+- [Download Promotional Playbook (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/powerbi-customer-analysis/RFM_Promotional_Playbook.pptx)
 
 ## Dashboard Preview
 ![Introduction](Intro.png)
