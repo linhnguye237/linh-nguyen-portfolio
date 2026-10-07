@@ -24,9 +24,13 @@ CONVENTIONS USED THROUGHOUT THIS SCRIPT
   from COUNT(*), which is the only count available. If an id column is added later, replace every COUNT(*)
   marked "-- GRAIN" below with COUNT(DISTINCT <order_id_column>) and rename record_count -> transaction_count.
 - Verified end-to-end against fp20c12 on 2026-09-15: every statement in this file (Section 0's checks, both
-  views, Q1-Q10, and Tasks 2/4/5/6) ran with zero errors and zero warnings, and the Task 6 reconciliation
-  check returned a reconciliation_gap of 0.00 for baseline, decline, and recovery. Re-run that check after
-  any further edits to this file.
+  views, Q1-Q10, and Tasks 2/4/5/6) ran with zero errors and zero warnings. The file was then edited on
+  2026-10-07 (dbo.v_xmas_sales: explicit column list and stricter complete-season test; Question 2's
+  quantity scaling; the avg-value/avg-price pct-change columns; the Task 6 reconciliation check, whose
+  earlier version could not fail) and re-run end-to-end the same day against a local SQL Server 2022
+  restore of fp20c12.bak: all 34 result sets returned with zero errors and zero warnings, and the
+  corrected Task 6 check returned a reconciliation_gap of 0.00 across 3 channels for baseline, decline,
+  and recovery. Re-run the whole file after any further edits, since every query reads dbo.v_xmas_sales.
 ===================================================================================================== */
 
 SET DATEFIRST 7;
@@ -112,8 +116,10 @@ UNION ALL SELECT 'unit_price', COUNT(*) FROM dbo.xmas_sales WHERE unit_price < 0
 /* =====================================================================================================
 SECTION 0.5: SHARED PREPARATION (Task 1)
 dbo.v_xmas_sales - single source of truth for season tagging, restricted to Nov/Dec/Jan, and restricted
-to seasons that actually have all three months present (so a season stays excluded automatically if new
-data still leaves it incomplete - not just a hardcoded '2018-01-31' cutoff).
+to seasons where all three months are actually covered (data reaching the first and last week of each
+month), so a season stays excluded automatically if new data still leaves it incomplete - not just a
+hardcoded '2018-01-31' cutoff. Compare against Section 0e's first_date/last_date per month to see which
+seasons qualify.
 ===================================================================================================== */
 
 GO
@@ -146,14 +152,27 @@ WITH tagged AS (
 
         DATEPART(HOUR, [time]) AS [hour],
 
-        s.*
+        -- Columns listed explicitly (not s.*) so the view's column set is fixed at the 19 columns
+        -- confirmed in Section 0a and does not go stale if dbo.xmas_sales is altered later.
+        s.[date], s.[time], s.customer_age_range, s.product_type, s.product_category, s.product_name,
+        s.purchase_type, s.country, s.city, s.gender, s.xmas_budget, s.payment_method, s.quantity,
+        s.unit_price, s.tax_amount, s.unit_cost, s.cost, s.total_sales, s.profit
     FROM dbo.xmas_sales s
     WHERE MONTH([date]) IN (11, 12, 1)   -- restrict analysis to Nov/Dec/Jan only
 ),
-season_coverage AS (
-    -- A season only counts as complete once it has data in all three of its months.
-    SELECT xmas_season, COUNT(DISTINCT [month]) AS months_present
+month_coverage AS (
+    -- A month only counts as covered if its data reaches both ends of the month: first record within
+    -- the first 7 days and last record within the final 7 days. A single stray day does not qualify.
+    SELECT xmas_season, [month]
     FROM tagged
+    GROUP BY xmas_season, [month]
+    HAVING MIN(DAY([date])) <= 7
+       AND MAX([date]) >= DATEADD(DAY, -6, MAX(end_date_of_month))
+),
+season_coverage AS (
+    -- A season only counts as complete once all three of its months are covered.
+    SELECT xmas_season, COUNT(*) AS months_present
+    FROM month_coverage
     GROUP BY xmas_season
 )
 SELECT t.*
@@ -244,8 +263,8 @@ SELECT
     ROUND(sales_prev_season / POWER(10, 6), 2) AS sales_prev_season,
     ROUND(sales_growth_pct, 4) AS sales_growth_pct,
 
-    ROUND(quantity / POWER(10, 3), 1) AS quantity,
-    ROUND(quantity_prev_season / POWER(10, 3), 1) AS quantity_prev_season,
+    ROUND(quantity * 1.0 / POWER(10, 3), 1) AS quantity,
+    ROUND(quantity_prev_season * 1.0 / POWER(10, 3), 1) AS quantity_prev_season,
     ROUND(quantity_growth_pct, 4) AS quantity_growth_pct,
 
     ROUND(profit / POWER(10, 6), 2) AS profit,
@@ -395,7 +414,7 @@ SELECT
     ROUND(b.avg_value_per_record, 2) AS baseline_avg_value_per_record,
     ROUND(d.avg_value_per_record, 2) AS decline_avg_value_per_record,
     ROUND(r.avg_value_per_record, 2) AS recovery_avg_value_per_record,
-    (ISNULL(d.avg_value_per_record, 0) - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline,
+    (d.avg_value_per_record - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline,
 
     ROUND(b.units_per_record, 3) AS baseline_units_per_record,
     ROUND(d.units_per_record, 3) AS decline_units_per_record,
@@ -527,7 +546,7 @@ SELECT
     ROUND(b.avg_value_per_record, 2) AS baseline_avg_value_per_record,
     ROUND(d.avg_value_per_record, 2) AS decline_avg_value_per_record,
     ROUND(r.avg_value_per_record, 2) AS recovery_avg_value_per_record,
-    (ISNULL(d.avg_value_per_record, 0) - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline
+    (d.avg_value_per_record - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline
 FROM b
 FULL OUTER JOIN d ON d.customer_age_range = b.customer_age_range
 FULL OUTER JOIN r ON r.customer_age_range = COALESCE(d.customer_age_range, b.customer_age_range)
@@ -558,7 +577,7 @@ SELECT
     ROUND(b.avg_value_per_record, 2) AS baseline_avg_value_per_record,
     ROUND(d.avg_value_per_record, 2) AS decline_avg_value_per_record,
     ROUND(r.avg_value_per_record, 2) AS recovery_avg_value_per_record,
-    (ISNULL(d.avg_value_per_record, 0) - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline
+    (d.avg_value_per_record - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline
 FROM b
 FULL OUTER JOIN d ON d.gender = b.gender
 FULL OUTER JOIN r ON r.gender = COALESCE(d.gender, b.gender)
@@ -589,7 +608,7 @@ SELECT
     ROUND(b.avg_value_per_record, 2) AS baseline_avg_value_per_record,
     ROUND(d.avg_value_per_record, 2) AS decline_avg_value_per_record,
     ROUND(r.avg_value_per_record, 2) AS recovery_avg_value_per_record,
-    (ISNULL(d.avg_value_per_record, 0) - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline
+    (d.avg_value_per_record - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change_decline_vs_baseline
 FROM b
 FULL OUTER JOIN d ON d.payment_method = b.payment_method
 FULL OUTER JOIN r ON r.payment_method = COALESCE(d.payment_method, b.payment_method)
@@ -859,7 +878,7 @@ SELECT
     (ISNULL(d.revenue, 0) - b.revenue) / NULLIF(b.revenue, 0) AS revenue_pct_change,
     ROUND(b.avg_value_per_record, 2) AS baseline_avg_value_per_record,
     ROUND(d.avg_value_per_record, 2) AS decline_avg_value_per_record,
-    (ISNULL(d.avg_value_per_record, 0) - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change
+    (d.avg_value_per_record - b.avg_value_per_record) / NULLIF(b.avg_value_per_record, 0) AS avg_value_per_record_pct_change
 FROM b
 FULL OUTER JOIN d ON d.purchase_type = b.purchase_type AND d.customer_age_range = b.customer_age_range
 ORDER BY revenue_lost ASC;
@@ -917,7 +936,7 @@ SELECT
     (ISNULL(d.quantity, 0) - b.quantity) * 1.0 / NULLIF(b.quantity, 0) AS quantity_pct_change,
     ROUND(b.avg_unit_price, 2) AS baseline_avg_unit_price,
     ROUND(d.avg_unit_price, 2) AS decline_avg_unit_price,
-    (ISNULL(d.avg_unit_price, 0) - b.avg_unit_price) / NULLIF(b.avg_unit_price, 0) AS avg_unit_price_pct_change,
+    (d.avg_unit_price - b.avg_unit_price) / NULLIF(b.avg_unit_price, 0) AS avg_unit_price_pct_change,
     ROUND(b.revenue_per_unit, 2) AS baseline_revenue_per_unit,
     ROUND(d.revenue_per_unit, 2) AS decline_revenue_per_unit,
     ROUND(ISNULL(d.revenue, 0) - ISNULL(b.revenue, 0), 2) AS revenue_lost
@@ -983,7 +1002,7 @@ SELECT
     ROUND(m.revenue / POWER(10, 6), 3) AS revenue,
     ROUND(m.cost / POWER(10, 6), 3) AS cost,
     ROUND(m.profit / POWER(10, 6), 3) AS profit,
-    ROUND(ISNULL(m.profit, 0) - ISNULL(prev.profit, 0), 2) AS profit_change,
+    ROUND(m.profit - prev.profit, 2) AS profit_change,
     (m.profit - prev.profit) / NULLIF(prev.profit, 0) AS profit_pct_change,
     ROUND(m.profit_margin, 4) AS profit_margin,
     m.profit_margin - prev.profit_margin AS profit_margin_change_pts,
@@ -1048,8 +1067,8 @@ ORDER BY profit_lost ASC;
 /* =====================================================================================================
 TASK 6: RELIABILITY CHECK - segment totals reconcile with the overall total
 Sums purchase_type revenue back up per season and compares it against the season-level total computed
-directly from dbo.v_xmas_sales. Any nonzero difference means a segment query above is dropping rows
-(e.g. NULLs in purchase_type) that the overall total still counts.
+directly from dbo.v_xmas_sales. Any nonzero difference means revenue is sitting on rows with no named
+channel (NULL purchase_type), which the overall total counts but a per-channel reading would miss.
 ===================================================================================================== */
 WITH overall AS (
     SELECT sr.season_role, SUM(v.total_sales) AS revenue
@@ -1057,17 +1076,25 @@ WITH overall AS (
     JOIN dbo.v_season_roles sr ON sr.xmas_year = v.xmas_year
     GROUP BY sr.season_role
 ),
-by_channel AS (
-    SELECT sr.season_role, SUM(v.total_sales) AS revenue
+channel_segments AS (
+    -- Aggregated at the same grain as Question 4 (season x purchase_type), named channels only.
+    SELECT sr.season_role, v.purchase_type, SUM(v.total_sales) AS revenue
     FROM dbo.v_xmas_sales v
     JOIN dbo.v_season_roles sr ON sr.xmas_year = v.xmas_year
-    GROUP BY sr.season_role
+    WHERE v.purchase_type IS NOT NULL
+    GROUP BY sr.season_role, v.purchase_type
+),
+by_channel AS (
+    SELECT season_role, SUM(revenue) AS revenue, COUNT(*) AS channel_count
+    FROM channel_segments
+    GROUP BY season_role
 )
 SELECT
     o.season_role,
     o.revenue AS overall_revenue,
     c.revenue AS sum_of_channel_revenue,
-    o.revenue - c.revenue AS reconciliation_gap
+    c.channel_count,
+    ROUND(o.revenue - ISNULL(c.revenue, 0), 2) AS reconciliation_gap
 FROM overall o
-JOIN by_channel c ON c.season_role = o.season_role
+LEFT JOIN by_channel c ON c.season_role = o.season_role
 ORDER BY o.season_role;
