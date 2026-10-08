@@ -50,6 +50,7 @@ Each next step is scoped to end in a specific business decision, not just an obs
 
 ## Files
 - [View SQL Code (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/sql-christmas-sales/xmas.sql)
+- [View Query Results (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/sql-christmas-sales/xmas_results.txt) — the output of every query in `xmas.sql`, run against the full dataset
 - [View Full Project Files (Google Drive)](https://drive.google.com/drive/folders/1bZH80KmytQOLrjyaxHRqpO0gJxp-ibDI)
 
 ## Status
