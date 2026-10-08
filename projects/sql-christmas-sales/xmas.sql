@@ -184,6 +184,10 @@ GO
 
 -- dbo.v_season_roles - the single definition of baseline / decline / recovery, used by every
 -- period-comparison query below instead of each query picking MAX(xmas_year) independently.
+-- The roles are chosen by hand, not derived by the query. They come from Question 1's revenue per season:
+-- 2020-2021 is the only season where revenue fell (7.18M -> 6.95M), so it is the decline; 2019-2020 is the
+-- last season before it (baseline); 2021-2022 is the season after it (recovery, 7.09M - still below
+-- baseline). If the data changes, re-check Question 1's results and edit these three rows to match.
 CREATE OR ALTER VIEW dbo.v_season_roles AS
 SELECT 2019 AS xmas_year, '2019-2020' AS xmas_season, 'baseline'  AS season_role, 1 AS season_order
 UNION ALL
