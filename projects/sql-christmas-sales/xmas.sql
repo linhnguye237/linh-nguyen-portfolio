@@ -82,13 +82,13 @@ FROM dbo.xmas_sales;
 ;WITH dups AS (
     SELECT
         [date], [time], country, city, customer_age_range, gender, purchase_type,
-        payment_method, product_category, product_name, unit_price, quantity,
-        total_sales, cost, profit,
+        payment_method, product_type, product_category, product_name, xmas_budget,
+        unit_price, quantity, tax_amount, unit_cost, total_sales, cost, profit,
         COUNT(*) AS dup_count
     FROM dbo.xmas_sales
     GROUP BY [date], [time], country, city, customer_age_range, gender, purchase_type,
-             payment_method, product_category, product_name, unit_price, quantity,
-             total_sales, cost, profit
+             payment_method, product_type, product_category, product_name, xmas_budget,
+             unit_price, quantity, tax_amount, unit_cost, total_sales, cost, profit
     HAVING COUNT(*) > 1
 )
 SELECT * FROM dups ORDER BY dup_count DESC;
