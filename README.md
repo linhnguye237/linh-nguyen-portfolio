@@ -61,7 +61,7 @@ Developed a 3-page Power BI dashboard using DAX-based RFM scoring to segment 18K
 ---
 
 ### DataFest Clustering Analysis
-Used Chi Test, Elbow Method and K-means clustering to segment commercial real estate markets and identify economic patterns.
+Used Chi Test, Elbow Method and K-means clustering to segment commercial real estate markets and identify economic patterns. The code is a reconstruction that runs on synthetic data, because the original data had to be deleted for confidentiality.
 
 [View Project](https://github.com/linhnguye237/linh-nguyen-portfolio/tree/main/projects/datafest-real-estate)  
 
