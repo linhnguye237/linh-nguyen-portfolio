@@ -1,0 +1,362 @@
+# analysis.R
+# Reconstruction of the Yokies DataFest 2025 analysis: where and when should
+# tech and finance firms lease office space?
+#
+# The original code is lost. This was rebuilt from the team's working notes,
+# saved code snippets and the final slides. Lines marked ORIGINAL are copied from
+# those sources; lines marked GUESS fill a gap nothing in the sources settles.
+#
+# Run from the project folder, after make_synthetic_data.R:
+#   Rscript analysis.R
+
+# Load libraries
+library(tidyverse)
+library(cluster)
+has_factoextra <- requireNamespace("factoextra", quietly = TRUE)
+
+dir.create("output", showWarnings = FALSE)
+save_plot <- function(plot, name, width = 10, height = 6) {
+  ggsave(file.path("output", name), plot, width = width, height = height, dpi = 150)
+  if (interactive()) print(plot)
+}
+
+# =============================================================================
+# 1. Read and merge the data
+# =============================================================================
+df_leases <- read.csv("data/Leases.csv")
+df_occupancy <- read.csv("data/Major Market Occupancy Data-revised.csv")
+df_econ <- read.csv("data/City Economic Data.csv")
+
+# Merge (ORIGINAL)
+df <- df_leases %>%
+  left_join(df_occupancy %>% select(year, quarter, market, avg_occupancy_proportion),
+            by = c("year", "quarter", "market")) %>%
+  mutate(year_quarter = paste(year, quarter, sep = ""),
+         city_state = paste0(city, ", ", state))
+
+# Check for missing values (ORIGINAL)
+cat("Leases with no occupancy match:", sum(is.na(df$avg_occupancy_proportion)), "\n")
+
+# =============================================================================
+# 2. WHERE: k-means clustering on rent, occupancy and leased SF
+# =============================================================================
+cluster_vars <- c("internal_class_rent", "avg_occupancy_proportion", "leasedSF")
+
+# GUESS: rows missing any of the three features were dropped before clustering
+df_model <- df %>% drop_na(all_of(cluster_vars))
+df_scaled <- scale(df_model[, cluster_vars])
+
+# ---- Elbow method -----------------------------------------------------------
+# GUESS: seed, nstart and the k range. The original most likely used
+# factoextra::fviz_nbclust(df_scaled, kmeans, method = "wss"), which draws the
+# same curve but is slow on this many rows.
+set.seed(123)
+wss <- map_dbl(1:10, ~ kmeans(df_scaled, centers = .x, nstart = 10, iter.max = 50)$tot.withinss)
+
+p_elbow <- tibble(k = 1:10, wss = wss) %>%
+  ggplot(aes(x = k, y = wss)) +
+  geom_line() +
+  geom_point(size = 3) +
+  geom_vline(xintercept = 6, linetype = "dashed") +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "The Elbow Method",
+       x = "# of clusters",
+       y = "Total within-cluster sum of squares") +
+  theme_minimal()
+save_plot(p_elbow, "01_elbow.png", 8, 5)
+
+# ---- Fit k = 6 --------------------------------------------------------------
+set.seed(123)
+k6_result <- kmeans(df_scaled, centers = 6, nstart = 25, iter.max = 100)
+
+df_clustered <- df_model %>%
+  mutate(cluster = factor(k6_result$cluster))
+
+cluster_summary <- df_clustered %>%
+  group_by(cluster) %>%
+  summarise(avg_rent = mean(internal_class_rent),
+            avg_occupancy = mean(avg_occupancy_proportion),
+            avg_leasedSF = mean(leasedSF),
+            count = n())
+
+# ---- Label the clusters -----------------------------------------------------
+# The team labelled clusters by hand from this table. Cluster numbers change
+# with the data and the seed, so the same reasoning is written as a rule:
+#   two largest avg_leasedSF        -> Mega Leases, Transitional Large Leases
+#   of the rest, the two high-rent  -> Hot Spot (higher occupancy), Overpriced
+#   the two low-rent                -> Value Cluster (higher occupancy), Distressed
+# Applied to the original cluster table, this rule gives the team's labels.
+big_clusters <- cluster_summary %>% arrange(desc(avg_leasedSF)) %>% slice_head(n = 2)
+
+cluster_labels <- bind_rows(
+  big_clusters %>%
+    mutate(cluster_label = c("Mega Leases", "Transitional Large Leases")),
+  cluster_summary %>%
+    filter(!cluster %in% big_clusters$cluster) %>%
+    mutate(high_rent = rank(-avg_rent) <= 2) %>%
+    group_by(high_rent) %>%
+    mutate(high_occupancy = avg_occupancy == max(avg_occupancy)) %>%
+    ungroup() %>%
+    mutate(cluster_label = case_when(
+      high_rent & high_occupancy ~ "Hot Spot",
+      high_rent ~ "Overpriced",
+      high_occupancy ~ "Value Cluster",
+      TRUE ~ "Distressed"
+    ))
+) %>%
+  select(cluster, cluster_label)
+
+cluster_summary <- cluster_summary %>% left_join(cluster_labels, by = "cluster")
+df_clustered <- df_clustered %>% left_join(cluster_labels, by = "cluster")
+
+cat("\n--- Cluster summary ---\n")
+print(as.data.frame(cluster_summary))
+write.csv(cluster_summary, "output/cluster_summary.csv", row.names = FALSE)
+
+# ---- Visualize the clusters -------------------------------------------------
+# (ORIGINAL)
+p_scatter <- ggplot(df_clustered, aes(x = internal_class_rent, y = avg_occupancy_proportion, color = cluster)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "K = 6 Clusters by Rent and Occupancy",
+       x = "Internal Class Rent",
+       y = "Avg Occupancy Proportion") +
+  theme_minimal()
+save_plot(p_scatter, "02_clusters_rent_occupancy.png")
+
+# PCA-based (ORIGINAL when factoextra is installed)
+if (has_factoextra) {
+  p_pca <- factoextra::fviz_cluster(k6_result, data = df_scaled,
+                                    ellipse.type = "euclid",
+                                    geom = "point",
+                                    palette = "jco",
+                                    main = "K-Means Clusters (k = 6)")
+} else {
+  pca <- prcomp(df_scaled)
+  p_pca <- as_tibble(pca$x[, 1:2]) %>%
+    mutate(cluster = df_clustered$cluster) %>%
+    ggplot(aes(x = PC1, y = PC2, color = cluster)) +
+    geom_point(alpha = 0.6) +
+    stat_ellipse() +
+    labs(title = "K-Means Clusters (k = 6)", x = "Dim1", y = "Dim2") +
+    theme_minimal()
+}
+save_plot(p_pca, "03_clusters_pca.png")
+
+# =============================================================================
+# 3. WHERE: top 7 cities and their cluster mix
+# =============================================================================
+main_clusters <- c("Hot Spot", "Distressed", "Value Cluster")
+df_main <- df_clustered %>% filter(cluster_label %in% main_clusters)
+
+# Top cities by total leased SF (ORIGINAL logic, n = 20 in the doc, 7 on the slide)
+top_cities <- df_main %>%
+  group_by(city_state) %>%
+  summarise(total_leased = sum(leasedSF, na.rm = TRUE)) %>%
+  slice_max(total_leased, n = 7) %>%
+  pull(city_state)
+
+cat("\n--- Top 7 cities ---\n")
+print(top_cities)
+
+df_top <- df_main %>% filter(city_state %in% top_cities)
+
+# The original x-axis said "Number of Buildings", but each row is a lease
+p_top_count <- ggplot(df_top, aes(y = fct_rev(fct_infreq(city_state)), fill = cluster_label)) +
+  geom_bar() +
+  labs(title = "Top 7 Cities by Leasing Volume (Clusters 2-4)",
+       x = "Number of Leases", y = "City, State", fill = "Cluster Label") +
+  theme_minimal()
+save_plot(p_top_count, "04_top7_cities_count.png")
+
+p_top_pct <- ggplot(df_top, aes(y = city_state, fill = cluster_label)) +
+  geom_bar(position = "fill") +
+  scale_x_continuous(labels = scales::percent) +
+  labs(title = "Percent of Leasing by Cluster Type (Top 7 Cities)",
+       x = "Percent of Leases", y = "City, State", fill = "Cluster Label") +
+  theme_minimal()
+save_plot(p_top_pct, "05_top7_cities_percent.png")
+
+# Each city is grouped by its most common cluster
+city_cluster <- df_top %>%
+  count(city_state, cluster_label) %>%
+  group_by(city_state) %>%
+  mutate(share = n / sum(n)) %>%
+  slice_max(n, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
+  select(city_state, dominant_cluster = cluster_label, cluster_share = share)
+
+# =============================================================================
+# 4. WHERE: is industry (tech vs finance) independent of cluster type?
+# =============================================================================
+industries <- c("Financial Services and Insurance",
+                "Technology, Advertising, Media, and Information")
+
+# GUESS: the test used every city in the three main clusters, not only the top 7
+df_industry <- df_main %>% filter(internal_industry %in% industries)
+
+contingency_table <- table(df_industry$cluster_label, df_industry$internal_industry)
+chi_result <- chisq.test(contingency_table)
+
+cat("\n--- Chi-square test: cluster type vs industry ---\n")
+print(contingency_table)
+print(chi_result)
+cat("Pearson residuals:\n");      print(chi_result$residuals)
+cat("Standardized residuals:\n"); print(chi_result$stdres)
+cat("Raw residuals:\n");          print(chi_result$observed - chi_result$expected)
+
+# Dominant industry per city. GUESS: the slide table gives no method for this
+# label; here it is whichever of the two industries signed more leases.
+city_industry <- df_clustered %>%
+  filter(city_state %in% top_cities, internal_industry %in% industries) %>%
+  count(city_state, internal_industry) %>%
+  group_by(city_state) %>%
+  slice_max(n, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
+  mutate(dominant_industry = if_else(str_detect(internal_industry, "Financial"),
+                                     "Finance-heavy", "Tech-heavy")) %>%
+  select(city_state, dominant_industry)
+
+# =============================================================================
+# 5. WHERE: economic background of the top 7 cities
+# =============================================================================
+p_econ <- df_econ %>%
+  filter(city_state %in% top_cities) %>%
+  pivot_longer(c(avg_labour_force, employment, unemployment),
+               names_to = "indicator", values_to = "people") %>%
+  mutate(indicator = recode(indicator, avg_labour_force = "Average Labour Force")) %>%
+  ggplot(aes(x = year, y = people, color = indicator)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  facet_wrap(~ city_state, scales = "free_y") +
+  scale_color_manual(values = c("Average Labour Force" = "black",
+                                "employment" = "blue",
+                                "unemployment" = "red")) +
+  labs(title = "Economic Trends by City (Labor Force, Employment, Unemployment)",
+       x = "Year", y = "Number of People", color = "Indicator") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+save_plot(p_econ, "06_economic_trends.png", 11, 7)
+
+econ_rates <- df_econ %>%
+  filter(city_state %in% top_cities) %>%
+  mutate(unemployment_rate = unemployment / avg_labour_force * 100)
+
+p_unemp <- ggplot(econ_rates, aes(x = year, y = unemployment_rate)) +
+  geom_line(color = "darkgreen", linewidth = 1) +
+  geom_point(color = "darkgreen", size = 2) +
+  facet_wrap(~ city_state, scales = "free_y", ncol = 2) +
+  labs(title = "Unemployment Rate by City", x = "Year", y = "Rate (%)") +
+  theme_minimal()
+save_plot(p_unemp, "07_unemployment_rate.png", 9, 10)
+
+# One-line trend per city for the final table
+city_econ <- econ_rates %>%
+  group_by(city_state) %>%
+  summarise(labour_force_change = last(avg_labour_force) / first(avg_labour_force) - 1,
+            unemployment_rate_2024 = last(unemployment_rate))
+
+# =============================================================================
+# 6. WHEN: does occupancy differ by quarter?
+# =============================================================================
+df_when <- df_clustered %>% filter(city_state %in% top_cities)
+
+p_occ_quarter <- df_when %>%
+  group_by(city_state, quarter) %>%
+  summarise(avg_occupancy = mean(avg_occupancy_proportion, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = city_state, y = avg_occupancy, fill = quarter)) +
+  geom_col(position = "dodge") +
+  labs(title = "Average Occupancy per City By Quarter",
+       x = "City", y = "Average Occupancy Proportion", fill = "Quarter") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(p_occ_quarter, "08_occupancy_by_quarter.png")
+
+# One-way ANOVA: at least one quarter's mean occupancy is different
+anova_result <- aov(avg_occupancy_proportion ~ factor(quarter), data = df_when)
+cat("\n--- ANOVA: occupancy by quarter ---\n")
+print(summary(anova_result))
+
+# Paired t-test: Q1 and Q4 (high season) vs Q2 and Q3 (low season) (ORIGINAL)
+df_when <- df_when %>%
+  mutate(quarter = as.character(quarter)) %>%
+  mutate(season_group = case_when(
+    quarter %in% c("Q1", "Q4") ~ "high_season",
+    quarter %in% c("Q2", "Q3") ~ "low_season",
+    TRUE ~ NA_character_
+  ))
+
+# Aggregate mean occupancy by city and season group
+seasonal_df <- df_when %>%
+  group_by(city_state, season_group) %>%
+  summarise(mean_occupancy = mean(avg_occupancy_proportion, na.rm = TRUE), .groups = "drop")
+
+# Pivot to wide format
+season_wide <- seasonal_df %>%
+  pivot_wider(names_from = season_group, values_from = mean_occupancy)
+
+# An earlier version was one-sided ("greater") across 213 cities. The slide states
+# a two-sided hypothesis, so this follows the slide on the top 7 cities.
+t_test_result <- t.test(
+  season_wide$high_season,
+  season_wide$low_season,
+  paired = TRUE
+)
+cat("\n--- Paired t-test: (Q1 + Q4) vs (Q2 + Q3) occupancy ---\n")
+print(t_test_result)
+
+# Average availability proportion per year_quarter (ORIGINAL)
+average_year_quarter_data <- df %>%
+  group_by(year_quarter) %>%
+  summarise(avg_availability_proportion = mean(availability_proportion, na.rm = TRUE))
+
+p_avail <- ggplot(average_year_quarter_data, aes(x = year_quarter, y = avg_availability_proportion)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Average Availability Proportion Per Year-Quarter",
+       x = "Year-Quarter",
+       y = "Average Availability Proportion") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(p_avail, "09_availability_by_quarter.png")
+
+# =============================================================================
+# 7. Commission potential (working doc only, not in the final slides)
+# =============================================================================
+# GUESS: commission potential = leasedSF x internal_class_rent, summed
+df_commission <- df_clustered %>%
+  mutate(commission_potential = leasedSF * internal_class_rent)
+
+p_comm_class <- df_commission %>%
+  group_by(cluster_label, internal_class) %>%
+  summarise(total_commission_potential = sum(commission_potential), .groups = "drop") %>%
+  ggplot(aes(x = cluster_label, y = total_commission_potential, fill = internal_class)) +
+  geom_col(position = "dodge") +
+  labs(title = "Commission Potential by Cluster and Class",
+       x = "Cluster Type", y = "Estimated Commission Potential ($)", fill = "Class") +
+  theme_minimal()
+save_plot(p_comm_class, "10_commission_by_cluster_class.png")
+
+p_comm_city <- df_commission %>%
+  group_by(cluster_label, city_state) %>%
+  summarise(total_commission_potential = sum(commission_potential), .groups = "drop") %>%
+  group_by(cluster_label) %>%
+  slice_max(total_commission_potential, n = 5) %>%
+  ungroup() %>%
+  ggplot(aes(x = total_commission_potential, y = city_state, fill = cluster_label)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ cluster_label, scales = "free_y") +
+  labs(title = "Top Cities by Commission Potential in Each Cluster",
+       x = "Estimated Commission Potential ($)", y = "City, State") +
+  theme_minimal()
+save_plot(p_comm_city, "11_commission_top_cities.png", 13, 8)
+
+# =============================================================================
+# 8. Final table: cluster type + economic background + industry, per city
+# =============================================================================
+final_table <- city_cluster %>%
+  left_join(city_econ, by = "city_state") %>%
+  left_join(city_industry, by = "city_state") %>%
+  arrange(dominant_cluster, city_state)
+
+cat("\n--- Final city table ---\n")
+print(as.data.frame(final_table))
+write.csv(final_table, "output/final_city_table.csv", row.names = FALSE)
