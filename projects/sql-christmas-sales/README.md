@@ -49,6 +49,7 @@ Each next step is scoped to end in a specific business decision, not just an obs
 - No order/transaction ID column exists in the source table, so every "count" measure is a row count (`record_count`), not a confirmed distinct-transaction count — documented as an open assumption directly in the script
 
 ## Files
+- [Read the Full Report (PDF)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/sql-christmas-sales/SQL%20Capstone%20Project%20Report_Linh.pdf) — analysis approach, SQL techniques used, findings, and recommendations for further analysis ([Word version](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/sql-christmas-sales/SQL%20Capstone%20Project%20Report_Linh.docx))
 - [View SQL Code (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/sql-christmas-sales/xmas.sql)
 - [View Query Results (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/sql-christmas-sales/xmas_results.txt) — the output of every query in `xmas.sql`, run against the full dataset
 - [View Full Project Files (Google Drive)](https://drive.google.com/drive/folders/1bZH80KmytQOLrjyaxHRqpO0gJxp-ibDI)
