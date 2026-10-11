@@ -319,38 +319,7 @@ p_avail <- ggplot(average_year_quarter_data, aes(x = year_quarter, y = avg_avail
 save_plot(p_avail, "09_availability_by_quarter.png")
 
 # =============================================================================
-# 7. Commission potential (working doc only, not in the final slides)
-# =============================================================================
-# GUESS: commission potential = leasedSF x internal_class_rent, summed
-df_commission <- df_clustered %>%
-  mutate(commission_potential = leasedSF * internal_class_rent)
-
-p_comm_class <- df_commission %>%
-  group_by(cluster_label, internal_class) %>%
-  summarise(total_commission_potential = sum(commission_potential), .groups = "drop") %>%
-  ggplot(aes(x = cluster_label, y = total_commission_potential, fill = internal_class)) +
-  geom_col(position = "dodge") +
-  labs(title = "Commission Potential by Cluster and Class",
-       x = "Cluster Type", y = "Estimated Commission Potential ($)", fill = "Class") +
-  theme_minimal()
-save_plot(p_comm_class, "10_commission_by_cluster_class.png")
-
-p_comm_city <- df_commission %>%
-  group_by(cluster_label, city_state) %>%
-  summarise(total_commission_potential = sum(commission_potential), .groups = "drop") %>%
-  group_by(cluster_label) %>%
-  slice_max(total_commission_potential, n = 5) %>%
-  ungroup() %>%
-  ggplot(aes(x = total_commission_potential, y = city_state, fill = cluster_label)) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ cluster_label, scales = "free_y") +
-  labs(title = "Top Cities by Commission Potential in Each Cluster",
-       x = "Estimated Commission Potential ($)", y = "City, State") +
-  theme_minimal()
-save_plot(p_comm_city, "11_commission_top_cities.png", 13, 8)
-
-# =============================================================================
-# 8. Final table: cluster type + economic background + industry, per city
+# 7. Final table: cluster type + economic background + industry, per city
 # =============================================================================
 final_table <- city_cluster %>%
   left_join(city_econ, by = "city_state") %>%
