@@ -53,8 +53,8 @@ This project presents a 3-page Power BI dashboard that analyzes customer behavio
 - Discount usage patterns across segments
 - Revenue comparison: promotional vs non-promotional
 - Churn risk metrics:
-  - Revenue at churn risk: 2.69bn
-  - Customers at risk: 3.65K
+  - Revenue at churn risk: 2.69bn (true figure 4.05bn; see Promotional Playbook)
+  - Customers at risk: 3.65K (true figure 4,818; see Promotional Playbook)
   - Discount dependency index: 2.05%
 
 ---
@@ -87,7 +87,15 @@ This project presents a 3-page Power BI dashboard that analyzes customer behavio
 ---
 
 ## Promotional Playbook
-A 13-slide follow-up deck that turns the dashboard's segments into a spend plan: which of the 8 RFM segments to grow with perks, which to win back and in what order, and four fixes to how promotions are planned and measured. It also documents a confirmed bug in the dashboard's own churn-risk filter (a segment name mismatch that undercounts at-risk customers by 1,171, 4,818/4.05bn actual vs. 3.65K/2.69bn shown) along with three other measurement gaps to fix before trusting the KPI cards above.
+A 14-slide follow-up deck that turns the dashboard's segments into a spend plan: which of the 8 RFM segments to grow with perks, which to win back and in what order, and four fixes to how promotions are planned and measured.
+
+The dashboard was submitted as-is, so the deck documents its known issues rather than fixing them:
+- **Confirmed bug:** the churn-risk measures filter on "Cooling Down Customers" (no hyphen), which silently drops that segment. The true figures are 4,818 customers / 4.05bn, not the 3.65K / 2.69bn shown.
+- **Data limitations:** no sale falls inside any promotion's validity dates (all 16 run 2010–2014; transactions are 2020–2022, and 8 promotions were never used), and the discount tiers' min/max quantities don't match the actual sales.
+- **Measurement gaps:** promotion effectiveness reports revenue, not profit, and the single average recency hides segments ranging from 15 to 250 days.
+- **Presentation slips:** one chart titled "Occupation Distribution" actually shows education level, and some visuals clip segments behind internal scrolling.
+
+An appendix slide lists every figure in the deck, recalculated from the .pbix's own DAX and tables, with whether it matches, is a dashboard bug, or was revised.
 
 - [Download Promotional Playbook (GitHub)](https://github.com/linhnguye237/linh-nguyen-portfolio/blob/main/projects/powerbi-customer-analysis/RFM_Promotional_Playbook.pptx)
 
